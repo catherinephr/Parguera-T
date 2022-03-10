@@ -1,0 +1,43 @@
+---
+title: "La parguera sst"
+output: html_document
+date: '2022-03-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("PargueraSST_class.R")
+
+library(tidyverse)
+library(lubridate)
+library(performance)
+library(see)
+```
+##1. Have SST been increasing in La Parguera Nature Reserve?##
+```{r, echo=FALSE}
+#### 2. What is the typical seasonal SST in La Parguera Nature Reserve?#
+```{r, echo=FALSE}
+```
+## 3. In what years do you expect corals experienced beanching in La Parguera?
+```{r, echo=FALSE}
+```
+
+
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+
+
+
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
