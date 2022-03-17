@@ -122,6 +122,7 @@ data %>% ggplot(aes(x=datetime, y=CRW_DHW)) +
         axis.line = element_line(colour = "black"),
         text=element_text(size=20))
 
+
   
 
 
