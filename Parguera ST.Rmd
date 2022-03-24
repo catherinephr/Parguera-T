@@ -1,42 +1,144 @@
 ---
 title: "La parguera sst"
-output: html_document
+author: "Catherine Hernandez"
 date: '2022-03-10'
+output: html_document
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-source("PargueraSST_class.R")
-
+## Introduction
+Here we would add text about the motivation for the project, where we got our data,, and our three main questions. To describe everything we did from the begining 
+```{r setup,include=TRUE}
+knitr::opts_chunk$set(echo=TRUE)
+#####Load libraries########
 library(tidyverse)
 library(lubridate)
-library(performance)
-library(see)
+library(performance)#test asuption of linear regresion and pvalue
+library(ggplot2)
+library(Hmisc)
+library(sjPlot)
+
+#######Load data#####
+#Import data for lat and long closet to Enrique, La parguera from NOAA Coral reef watch data only select one data point every 31 days to save us time for class and only output SST and DHW data
+#data= read_csv("https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.csv?CRW_DHW%5B(1985-04-01T12:00:00Z):31:(2022-03-08T12:00:00Z)%5D%5B(17.975):1:(17.975)%5D%5B(-67.05):1:(-67.05)%5D,CRW_SST%5B(1985-04-01T12:00:00Z):31:(2022-03-08T12:00:00Z)%5D%5B(17.975):1:(17.975)%5D%5B(-67.05):1:(-67.05)%5D")
+#write_csv(data,"NOAA_CRW_SST_DHW_LA_PARGUERA.csv")
+data=read_csv("NOAA_CRW_SST_DHW_LA_PARGUERA.csv")
+#to save to r markdown 
+#first row look annoying -- not tidy! remove 
+data=slice(data,-1) #REMOVE FIRST ROW
+
+#LOOK great, but what about the time data
+data$datetime= as_datetime(data$time, tz="Etc/GMT-4")
+
+#SO what does our data look like?
+
+#######cleanig  data##########
+data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST))
+#WOOOOW, very  bad, lets look summary data
+summary(data) #lots of character
+#convert our character to numbers
+data$latitude= as.numeric(data$latitude)
+data$longitude= as.numeric(data$longitude)
+data$CRW_DHW= as.numeric(data$CRW_DHW)
+data$CRW_SST= as.numeric(data$CRW_SST)
+#so what does our data look like?
+data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST))
 ```
-##1. Have SST been increasing in La Parguera Nature Reserve?##
-```{r, echo=FALSE}
-#### 2. What is the typical seasonal SST in La Parguera Nature Reserve?#
-```{r, echo=FALSE}
+
+#1. Have SST been increasing in La Parguera Nature Reserve?
+Here we constructed a linear model.. to analyze our data and we found..
+
+```{r, echo=FALSE, message=FALSE,warning=FALSE,}
+#Creates linear regression model of SST vs Time
+model=lm(CRW_SST~datetime,data=data)
+tab_model(model) # provide summary of lm model
 ```
-## 3. In what years do you expect corals experienced beanching in La Parguera?
-```{r, echo=FALSE}
+```{r}
+##What are potential bleaching years?
+#PLOT: SST
+
+data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST)) +
+  xlab("Year") +
+  ylab("Sea Surface Temperature (°C)") +
+  scale_y_continuous(limits = c(26,31), breaks = seq(26,30,1)) + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor= element_blank(),
+        panel.background = element_blank(), #removes annoying gray area
+        axis.line= element_line(colour = "black", size = 0.5),  #adds lines for the axes
+        text = element_text(size = 20)) +
+  annotate("text", x=as.POSIXct("1987-09-17 12:00:00"), y=29.96, label= "1987", size=6, color="green") +
+  annotate("text", x=as.POSIXct("2005-09-14 12:00:00"), y=30.19, label= "2005", size=6, color="green")+
+  annotate("text", x=as.POSIXct("2010-9-15 12:00:00"), y=29.60, label= "2010", size=6, color="green") +
+  annotate("text", x=as.POSIXct("2021-9-29 12:00:00"), y=30.2, label= "2021", size=6, color="green")
 ```
 
 
+```{r, message=FALSE, fig.cap= "**Plot** of NOAA CoralTemp for La parguera Nature Reserve", fig.align= 'center'}
+data %>% ggplot(aes(x=datetime, y=CRW_SST))+ geom_line() + 
+  geom_smooth(method = "lm") 
 
-
-```{r cars}
-summary(cars)
 ```
+## 2. What is the typical seasonal SST in La Parguera Nature Reserve?
+You can also embed plots, for example
+
+```{r echo=FALSE}
+## R Markdown
+#What is the typical season SST in La Parguera Nature Reserve?
+
+data$month= substr(data$time,6,7) #creat month data
+#view always
+#view(data)
+library(Hmisc) 
+#generate monthly mean SST +- 95% uncertanity
+parguera_climatology= data %>%  
+  group_by(month) %>% 
+  summarise(ci=list(mean_cl_normal(CRW_SST) %>% 
+                      rename(mean=y, lwr=ymin, upr=ymax))) %>% 
+  unnest(cols = c(ci))
+view(parguera_climatology) #view data
+
+parguera_climatology %>% ggplot() +
+  geom_ribbon(aes(x=as.numeric(month)+0.5, ymin=lwr, ymax=upr, group=1),fill="grey") +
+  geom_line(aes(x=as.numeric(month)+0.5, y=mean, group=1))+
+  xlab("Months")+
+  ylab ("Mean Seasfurface Temperature(°C)")+
+   scale_y_continuous(limits = c(26,30),breaks = seq(26,30,1))+
+   scale_x_continuous(limits = c(01,12),breaks = seq(1,12,1))+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        text=element_text(size=15))
+```
+## 3. In what years do you expect corals experienced bleaching in La Parguera?
+```{r}
+#In what year do you expect coral expierence bleaching in La Parguera?
+data %>% ggplot(aes(x= datetime, y=CRW_DHW)) +
+  geom_line() +
+  geom_hline(yintercept = 4, size = 2, colour = "blue") +
+  xlab("Year") +
+  ylab("Degree Heating Week(°C)") +
+  scale_y_continuous(limits = c(0,6), breaks = seq(0,6,2),expand = c(0,0)) + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor= element_blank(),
+        panel.background = element_blank(), #removes annoying gray area
+        axis.line= element_line(colour = "black"), #adds lines for the axes
+        text = element_text(size = 20)) +
+  annotate("text", x=as.POSIXct("2005-10-15 12:00:00"), y=5.9, label= "2005", size=6, color="green")+
+  annotate("text", x=as.POSIXct("2010-9-15 12:00:00"), y=5.9, label= "2010", size=6, color="green")
+
+
+```
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
 
 ## Including Plots
 
 You can also embed plots, for example:
 
-```{r, echo=FALSE}
-
-
-
+```{r pressure, echo=FALSE}
 plot(pressure)
 ```
 

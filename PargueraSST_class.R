@@ -78,7 +78,7 @@ parguera_climatology= data %>%
 view(parguera_climatology) #view data
 
 parguera_climatology %>% ggplot() +
-  geom_ribbon(aes(x=month, ymin=lwr, ymax=upr, group=1),fill="blue") +
+  geom_ribbon(aes(x=month, ymin=lwr, ymax=upr, group=1),fill="green") +
   geom_line(aes(x=month, y=mean, group=1))+
   scale_y_continuous(limits = c(26,30),breaks = seq(26,30,1))+
   xlab("Months")+
@@ -87,7 +87,7 @@ parguera_climatology %>% ggplot() +
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
-        text=element_text(size=))
+        text=element_text(size=20))
 
   
   
