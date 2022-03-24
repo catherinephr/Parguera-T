@@ -1,12 +1,11 @@
 ---
-title: "La parguera sst"
+title: "**La parguera sst**"
 author: "Catherine Hernandez"
 date: '2022-03-10'
 output: html_document
 ---
-## Introduction
-Here we would add text about the motivation for the project, where we got our data,, and our three main questions. To describe everything we did from the begining 
-```{r setup,include=TRUE}
+
+```{r, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo=TRUE)
 #####Load libraries########
 library(tidyverse)
@@ -31,27 +30,32 @@ data$datetime= as_datetime(data$time, tz="Etc/GMT-4")
 #SO what does our data look like?
 
 #######cleanig  data##########
-data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST))
+#data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST))
 #WOOOOW, very  bad, lets look summary data
-summary(data) #lots of character
+#summary(data) #lots of character
 #convert our character to numbers
 data$latitude= as.numeric(data$latitude)
 data$longitude= as.numeric(data$longitude)
 data$CRW_DHW= as.numeric(data$CRW_DHW)
 data$CRW_SST= as.numeric(data$CRW_SST)
 #so what does our data look like?
-data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST))
+#data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST))
 ```
-
-#1. Have SST been increasing in La Parguera Nature Reserve?
+## **Introduction**
+For this study, the data source was from NOAA coral reef watch data. The data for lat and long was imported for the Cayo Enrique, La Parguera. The main three questions are: 
+ 1. Have SST been increasing in La Parguera Reserve?
+ 2. What is the typical seasonal SST in La Parguera Reserve?
+ 3. In what years do you expect coral experienced bleaching in La Parguera?
+ 
+## **1. Have SST been increasing in La Parguera Nature Reserve?**
 Here we constructed a linear model.. to analyze our data and we found..
 
-```{r, echo=FALSE, message=FALSE,warning=FALSE,}
+```{r,message=FALSE, warning=FALSE,}
 #Creates linear regression model of SST vs Time
 model=lm(CRW_SST~datetime,data=data)
 tab_model(model) # provide summary of lm model
 ```
-```{r}
+````{r, message=FALSE, warning=FALSE, fig.cap="**Figure 1**: Plot of NOAA CoralTemp for La Parguera Natural Reserve", fig.align='center'}
 ##What are potential bleaching years?
 #PLOT: SST
 
@@ -72,14 +76,14 @@ data %>% ggplot()+ geom_line(aes(x=datetime, y=CRW_SST)) +
 
 
 ```{r, message=FALSE, fig.cap= "**Plot** of NOAA CoralTemp for La parguera Nature Reserve", fig.align= 'center'}
-data %>% ggplot(aes(x=datetime, y=CRW_SST))+ geom_line() + 
+#data %>% ggplot(aes(x=datetime, y=CRW_SST))+ geom_line() + 
   geom_smooth(method = "lm") 
 
 ```
-## 2. What is the typical seasonal SST in La Parguera Nature Reserve?
-You can also embed plots, for example
+## **2. What is the typical seasonal SST in La Parguera Nature Reserve?**
 
-```{r echo=FALSE}
+
+```{r,message=FALSE,warning=FALSE}
 ## R Markdown
 #What is the typical season SST in La Parguera Nature Reserve?
 
@@ -107,9 +111,11 @@ parguera_climatology %>% ggplot() +
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
         text=element_text(size=15))
+
 ```
-## 3. In what years do you expect corals experienced bleaching in La Parguera?
-```{r}
+## **3. In what years do you expect corals experienced bleaching in La Parguera?**
+```{r, message=FALSE,warning=FALSE}
+## R Markdown
 #In what year do you expect coral expierence bleaching in La Parguera?
 data %>% ggplot(aes(x= datetime, y=CRW_DHW)) +
   geom_line() +
